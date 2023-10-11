@@ -1,17 +1,49 @@
+
 import flet as ft
 
 
 def main(page):
     text_title = ft.Text("Chat Ao Vivo")
+
+    chat = ft.Column()
+
+    user_name = ft.TextField(label="Digite seu nome:")    
     
-    user_name = ft.TextField()    
+    def send_msg_tunnel(mesage):
+        text_msg_input = mesage["text_input"]
+        user_msg = mesage["username"]
+
+        chat.controls.append(ft.Text(f"{user_msg}: {text_msg_input}"))
+        page.update()
+        
+    page.pubsub.subscribe(send_msg_tunnel)
+
+    def send_msg(event):
+        page.pubsub.send_all({"text_input": text_msg.value, "username": user_name.value})
+        text_msg.value = ""
+        page.update()
+        
+    
+    text_msg = ft.TextField(label="Digite uma mensagem")
+    button_send_msg = ft.ElevatedButton("Enviar", on_click=send_msg)
+
+    def enter_popup(event):
+        page.add(chat)
+        popup.open=False
+        
+        page.remove(button_init)
+        
+        page.add(ft.Row(
+            [text_msg, button_send_msg]
+        ))
+        page.update()
 
     popup = ft.AlertDialog(
         open=False,
         modal=True,
         title=ft.Text("Bem vindo ao chat ao vivo"),
         content=user_name,
-        actions=[ft.ElevatedButton("Entrar")]
+        actions=[ft.ElevatedButton("Entrar", on_click=enter_popup)]
     )
 
     def init_chat(event):
