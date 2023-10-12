@@ -10,25 +10,37 @@ def main(page):
     user_name = ft.TextField(label="Digite seu nome:")    
     
     def send_msg_tunnel(mesage):
-        text_msg_input = mesage["text_input"]
-        user_msg = mesage["username"]
+        type_msg = mesage["type_msg"]
 
-        chat.controls.append(ft.Text(f"{user_msg}: {text_msg_input}"))
+        if type_msg == "mesage":
+            text_msg_input = mesage["text_input"]
+            user_msg = mesage["username"]
+
+            chat.controls.append(ft.Text(f"{user_msg}: {text_msg_input}"))
+        else:
+             user_msg = mesage["username"]
+             chat.controls.append(ft.Text(f"{user_msg} entrou no chat",
+                                            size=12, italic=True,
+                                            color=ft.colors.RED_ACCENT_700))
         page.update()
         
     page.pubsub.subscribe(send_msg_tunnel)
 
     def send_msg(event):
-        page.pubsub.send_all({"text_input": text_msg.value, "username": user_name.value})
+        page.pubsub.send_all({"text_input": text_msg.value, "username": user_name.value, 
+                              "type_msg":"mesage"})
         text_msg.value = ""
         page.update()
         
     
-    text_msg = ft.TextField(label="Digite uma mensagem")
+    text_msg = ft.TextField(label="Digite uma mensagem", on_submit=send_msg)
     button_send_msg = ft.ElevatedButton("Enviar", on_click=send_msg)
 
     def enter_popup(event):
+
+        page.pubsub.send_all({"username": user_name.value, "type_msg":"join"})
         page.add(chat)
+
         popup.open=False
         
         page.remove(button_init)
